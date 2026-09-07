@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Users } from '@lucide/vue';
+import { Building2, CreditCard, Gauge, LayoutGrid, Users } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,17 +15,38 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { users } from '@/routes/company';
+import { overview } from '@/routes/admin';
+import { index as companies } from '@/routes/admin/companies';
+import { index as subscriptions } from '@/routes/admin/subscriptions';
+import { index as allUsers } from '@/routes/admin/users';
+import { users as team } from '@/routes/company';
 import type { NavItem } from '@/types';
 
 const page = usePage();
 
-// Admins land on the team screen; everyone else has a personal dashboard.
-const mainNavItems = computed<NavItem[]>(() =>
-    page.props.auth.user.role === 'company_admin'
-        ? [{ title: 'Team', href: users(), icon: Users }]
-        : [{ title: 'Dashboard', href: dashboard(), icon: LayoutGrid }],
-);
+// Each role has its own home: staff get the console, company admins the
+// team screen, everyone else a personal dashboard.
+const mainNavItems = computed<NavItem[]>(() => {
+    switch (page.props.auth.user.role) {
+        case 'staff':
+            return [
+                { title: 'Overview', href: overview(), icon: Gauge },
+                { title: 'Companies', href: companies(), icon: Building2 },
+                {
+                    title: 'Subscriptions',
+                    href: subscriptions(),
+                    icon: CreditCard,
+                },
+                { title: 'Users', href: allUsers(), icon: Users },
+            ];
+        case 'company_admin':
+            return [{ title: 'Team', href: team(), icon: Users }];
+        default:
+            return [
+                { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
+            ];
+    }
+});
 
 const homeHref = computed(() => mainNavItems.value[0].href);
 </script>

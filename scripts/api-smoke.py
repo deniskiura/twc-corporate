@@ -90,6 +90,10 @@ check("missing token -> 422", s, 422)
 s, _ = call("GET", "/company/users", joined["api_token"])
 check("employee token on admin API -> 403", s, 403)
 
+# Staff see everything in the console but are not a company admin.
+s, _ = call("GET", "/company/users", "twc-staff-token")
+check("staff token on company API -> 403", s, 403)
+
 # Revoke a pending invite, then the link must be dead.
 s, inv2 = call("POST", "/company/invites", ACME, {"email": "leaver@acme.test", "plan_id": plans_standard})
 s, _ = call("DELETE", f"/company/invites/{inv2['data']['id']}", ACME)

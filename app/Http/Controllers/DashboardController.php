@@ -18,7 +18,11 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // An admin's home is the team screen; there's nothing else for them yet.
+        // Staff and company admins each have a home of their own.
+        if ($user->isStaff()) {
+            return to_route('admin.overview');
+        }
+
         if ($user->isCompanyAdmin()) {
             return to_route('company.users');
         }

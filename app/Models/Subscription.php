@@ -68,6 +68,6 @@ class Subscription extends Model
     #[Scope]
     protected function active(Builder $query): void
     {
-        $query->whereNull('ended_at');
+        $query->whereNull($query->qualifyColumn('ended_at'));
     }
 }

@@ -12,4 +12,7 @@ enum UserRole: string
 
     /** A sponsored user whose plan is paid for by their company. */
     case Employee = 'employee';
+
+    /** TWC's own staff. Sees every company, user and subscription. */
+    case Staff = 'staff';
 }

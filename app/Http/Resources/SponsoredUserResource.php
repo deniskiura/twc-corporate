@@ -24,7 +24,7 @@ class SponsoredUserResource extends JsonResource
             'email' => $this->email,
             'name' => $this->user?->name,
             'status' => $this->status,
-            'plan' => new PlanResource($this->plan),
+            'plan' => PlanResource::make($this->plan)->resolve(),
             'invited_at' => $this->invited_at,
             'last_sent_at' => $this->last_sent_at,
             'joined_at' => $this->joined_at,

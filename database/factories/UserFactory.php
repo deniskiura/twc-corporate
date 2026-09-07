@@ -50,6 +50,16 @@ class UserFactory extends Factory
     }
 
     /**
+     * Make the user a member of TWC's own staff.
+     */
+    public function staff(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Staff,
+        ]);
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static

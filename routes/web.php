@@ -19,4 +19,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('company.users');
 });
 
+require __DIR__.'/admin.php';
 require __DIR__.'/settings.php';

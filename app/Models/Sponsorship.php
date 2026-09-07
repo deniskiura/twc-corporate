@@ -186,6 +186,19 @@ class Sponsorship extends Model
     }
 
     /**
+     * Invites that have gone unanswered long enough to flag.
+     *
+     * @param  Builder<Sponsorship>  $query
+     */
+    #[Scope]
+    protected function stale(Builder $query): void
+    {
+        $query
+            ->where('status', SponsorshipStatus::Invited)
+            ->where('last_sent_at', '<=', now()->subDays(config('corporate.stale_invite_days')));
+    }
+
+    /**
      * Sum the cycle's allowance and spend in the same query as the list,
      * so the team page never runs one query per employee.
      *

@@ -33,6 +33,10 @@ curl -H "Content-Type: application/json" \
 
 Also `POST /api/company/invites/{id}/resend` and `DELETE /api/company/invites/{id}`, which the screen needs for stale invites. The company is always taken from the caller's token, never from the request, so there is no id to tamper with. Invite and resend both email the employee their link; the token is also returned in the response, as the brief asks, so the flow can be exercised without a mailbox.
 
+## The staff console
+
+Not in the brief, added afterwards: TWC's own view at `/admin` for the `staff` role. It shows an overview (companies, seats, pending and stale invites, active subscriptions, monthly run-rate, credits this month), every company with its admins and seat counts, a company page that reuses the team table exactly as the admin sees it plus the subscription history, all subscriptions with an active/ended filter, and all users with search. Its one action is onboarding a company: staff enter the company name and the first admin's name and email, and the admin gets an email to choose a password through the standard reset flow. Company admins and employees get a 403 on any of it. Screenshots: [overview](docs/screenshots/staff-overview.png), [companies](docs/screenshots/staff-companies.png), [one company](docs/screenshots/staff-company.png).
+
 ## Data model
 
 `companies` → `sponsorships` → `subscriptions`, with `plans` and a `credit_transactions` ledger.
@@ -40,7 +44,7 @@ Also `POST /api/company/invites/{id}/resend` and `DELETE /api/company/invites/{i
 - A **sponsorship** is one invited seat. It is created at invite time (email, plan, token) and gains a `user_id` and `joined_at` when accepted. Keeping the invite and the joined seat in one row means the admin's list is one query, and revoked rows stay as an audit trail.
 - A **subscription** is the billable period. It is only created on accept, which is what makes "invite ten, six log in, pay for six" fall out naturally. Plan changes or cancellations would close one and open another, so billing history is never rewritten.
 - **Credits are a ledger**, not a counter. Allowances, spends, employee top-ups and expiries are rows, so "credits used this month" is a sum over a date range and the monthly invoice can be reconciled against it.
-- Admins are users with `role = company_admin` and a `company_id`. One company per admin, for now.
+- Admins are users with `role = company_admin` and a `company_id`. One company per admin, for now. TWC's own people are `role = staff` and belong to no company.
 
 ## Stack
 
@@ -78,6 +82,7 @@ Employee top-ups are paid by the employee at purchase and never appear on the co
 - One live seat per email per company. Revoking an invite frees the email to be invited again.
 - Invite tokens don't expire, but an invite unanswered for 14 days is flagged as stale. Resending rotates the token so a forwarded old link dies.
 - Someone who already has a personal TWC account joins with that account. Someone already sponsored by another company can't be sponsored twice.
+- The run-rate on the staff console is the list price of active seats. It is a pulse, not the invoice; that still needs the billing job.
 
 ## What I cut, and what's next
 
@@ -87,7 +92,7 @@ Next, in order: the month-end billing job above; offboarding a joined seat (ends
 
 ## What I'd test
 
-- **Tenancy**: admin A listing, resending or revoking B's seats gets a 404; a `company_id` in the payload is ignored; an employee's token gets a 403 on the admin API.
+- **Tenancy**: admin A listing, resending or revoking B's seats gets a 404; a `company_id` in the payload is ignored; an employee's or staff token gets a 403 on the company API; a company admin gets a 403 on `/admin`.
 - **Accept**: `joined_at` and the subscription start equal the accept time with a frozen clock; a 16-credit plan joined on the 16th of a 30-day month gets 8 credits; accept twice is 409, revoked is 410, the old token after a resend is 404.
 - **Invite**: duplicate per company is 422, revoked email can be re-invited, email is lower-cased.
 - **List**: credits used only counts the current cycle, stale flips at exactly 14 days, totals match the rows, revoked rows are absent.

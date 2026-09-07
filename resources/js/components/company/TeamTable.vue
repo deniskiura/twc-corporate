@@ -8,6 +8,7 @@ import type { SponsoredUser } from '@/types';
 defineProps<{
     seats: SponsoredUser[];
     busySeatId: number | null;
+    readonly?: boolean;
 }>();
 
 defineEmits<{
@@ -27,7 +28,12 @@ defineEmits<{
                     <th class="px-4 py-3 font-medium">Status</th>
                     <th class="px-4 py-3 font-medium">Plan</th>
                     <th class="px-4 py-3 font-medium">Credits this month</th>
-                    <th class="px-4 py-3 text-right font-medium">Actions</th>
+                    <th
+                        v-if="!readonly"
+                        class="px-4 py-3 text-right font-medium"
+                    >
+                        Actions
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -68,7 +74,7 @@ defineEmits<{
                             {{ seat.credits.allowance }} credits once they join
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-right">
+                    <td v-if="!readonly" class="px-4 py-3 text-right">
                         <div
                             v-if="seat.status === 'invited'"
                             class="flex justify-end gap-1"
