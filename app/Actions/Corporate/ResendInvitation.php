@@ -2,7 +2,7 @@
 
 namespace App\Actions\Corporate;
 
-use App\Exceptions\InviteStateException;
+use App\Exceptions\SeatStateException;
 use App\Mail\EmployeeInvitation;
 use App\Models\Sponsorship;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,7 @@ class ResendInvitation
      */
     public function handle(Sponsorship $sponsorship): Sponsorship
     {
-        throw_unless($sponsorship->isPending(), InviteStateException::notPending());
+        throw_unless($sponsorship->isPending(), SeatStateException::notPending());
 
         return DB::transaction(function () use ($sponsorship) {
             $sponsorship->forceFill([

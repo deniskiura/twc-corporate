@@ -2,20 +2,19 @@
 
 namespace App\Actions\Corporate;
 
-use App\Enums\CreditTransactionType;
 use App\Enums\SponsorshipStatus;
 use App\Enums\UserRole;
-use App\Exceptions\InviteStateException;
+use App\Exceptions\SeatStateException;
 use App\Models\Sponsorship;
-use App\Models\Subscription;
 use App\Models\User;
-use App\Support\BillingCycle;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AcceptInvitation
 {
+    public function __construct(private readonly StartSubscription $startSubscription) {}
+
     /**
      * Turn a pending invite into a live, billable seat.
      *
@@ -43,12 +42,7 @@ class AcceptInvitation
                 'joined_at' => $joinedAt,
             ])->save();
 
-            $subscription = $sponsorship->subscriptions()->create([
-                'plan_id' => $sponsorship->plan_id,
-                'started_at' => $joinedAt,
-            ]);
-
-            $this->grantFirstAllowance($user, $subscription, $joinedAt);
+            $this->startSubscription->handle($sponsorship);
 
             return $user;
         });
@@ -56,8 +50,8 @@ class AcceptInvitation
 
     private function ensureAcceptable(Sponsorship $sponsorship): void
     {
-        throw_if($sponsorship->status === SponsorshipStatus::Revoked, InviteStateException::revoked());
-        throw_if($sponsorship->status === SponsorshipStatus::Joined, InviteStateException::alreadyAccepted());
+        throw_if($sponsorship->status === SponsorshipStatus::Revoked, SeatStateException::revoked());
+        throw_if($sponsorship->status === SponsorshipStatus::Joined, SeatStateException::alreadyAccepted());
     }
 
     private function findOrCreateUser(Sponsorship $sponsorship, string $name, ?string $password): User
@@ -68,7 +62,7 @@ class AcceptInvitation
             $sponsoredElsewhere = $existing->role === UserRole::Employee
                 && $existing->company_id !== $sponsorship->company_id;
 
-            throw_if($sponsoredElsewhere, InviteStateException::sponsoredElsewhere());
+            throw_if($sponsoredElsewhere, SeatStateException::sponsoredElsewhere());
 
             return $existing;
         }
@@ -79,24 +73,6 @@ class AcceptInvitation
             'password' => $password ?? Str::password(),
             // Holding the invite token proves they own the inbox.
             'email_verified_at' => now(),
-        ]);
-    }
-
-    /**
-     * The first month is prorated by the days left in it, so a seat that
-     * joins on the 28th neither gets nor pays for a full month.
-     */
-    private function grantFirstAllowance(User $user, Subscription $subscription, CarbonImmutable $joinedAt): void
-    {
-        $cycle = BillingCycle::containing($joinedAt);
-        $monthlyCredits = $subscription->sponsorship->plan->monthly_credits;
-
-        $user->creditTransactions()->create([
-            'subscription_id' => $subscription->id,
-            'type' => CreditTransactionType::Allowance,
-            'amount' => $cycle->prorate($monthlyCredits, $joinedAt),
-            'occurred_at' => $joinedAt,
-            'note' => 'Allowance for the rest of '.$cycle->start->format('F Y'),
         ]);
     }
 }

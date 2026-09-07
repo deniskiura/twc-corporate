@@ -44,7 +44,11 @@ const barTone = computed(() => {
                 <CardTitle class="text-3xl">{{ totals.joined }}</CardTitle>
             </CardHeader>
             <CardContent class="text-muted-foreground text-xs">
-                Seats you are billed for this month.
+                <template v-if="totals.suspended > 0">
+                    Billed this month. {{ totals.suspended }} more suspended,
+                    not billed after this month.
+                </template>
+                <template v-else>Seats you are billed for this month.</template>
             </CardContent>
         </Card>
 

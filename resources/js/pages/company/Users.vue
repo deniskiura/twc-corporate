@@ -129,6 +129,61 @@ async function revoke(seat: SponsoredUser) {
     }
 }
 
+async function suspend(seat: SponsoredUser) {
+    const who = seat.name ?? seat.email;
+    const confirmed = window.confirm(
+        `Suspend ${who}? They lose the rest of this month's credits and stop being billed from next month. You can resume them any time.`,
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    await act(seat, () => api.suspend(seat), `${who} is suspended.`);
+}
+
+async function resume(seat: SponsoredUser) {
+    const who = seat.name ?? seat.email;
+
+    await act(seat, () => api.resume(seat), `${who} is back on the plan.`);
+}
+
+async function remove(seat: SponsoredUser) {
+    const who = seat.name ?? seat.email;
+    const confirmed = window.confirm(
+        `Remove ${who} from ${props.company.name}'s plan? Their seat ends today. They keep their TWC account and you can invite them again later.`,
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    await act(seat, () => api.remove(seat), `${who} removed from the plan.`);
+}
+
+/** Run one seat action, then refresh the list and report how it went. */
+async function act(
+    seat: SponsoredUser,
+    request: () => Promise<unknown>,
+    successMessage: string,
+) {
+    busySeatId.value = seat.id;
+
+    try {
+        await request();
+        toast.success(successMessage);
+        await load();
+    } catch (error) {
+        toast.error(
+            error instanceof ApiError
+                ? error.message
+                : 'Something went wrong. Please try again.',
+        );
+    } finally {
+        busySeatId.value = null;
+    }
+}
+
 onMounted(load);
 </script>
 
@@ -208,6 +263,9 @@ onMounted(load);
                     :busy-seat-id="busySeatId"
                     @resend="resend"
                     @revoke="revoke"
+                    @suspend="suspend"
+                    @resume="resume"
+                    @remove="remove"
                 />
             </template>
         </template>

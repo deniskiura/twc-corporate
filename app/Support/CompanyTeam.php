@@ -43,11 +43,12 @@ final class CompanyTeam
         $joined = $this->seats->filter->hasJoined();
         $invited = $this->seats->filter->isPending();
 
-        $allowance = (int) $joined->sum(fn (Sponsorship $seat) => $seat->credits()->allowance);
+        $allowance = (int) $joined->sum(fn (Sponsorship $seat) => $seat->credits()->allowance());
         $used = (int) $joined->sum(fn (Sponsorship $seat) => $seat->credits()->used);
 
         return [
             'joined' => $joined->count(),
+            'suspended' => $this->seats->filter->isSuspended()->count(),
             'invited' => $invited->count(),
             'stale_invites' => $invited->filter->isStale()->count(),
             'credits' => [

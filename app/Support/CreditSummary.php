@@ -11,9 +11,15 @@ use Illuminate\Support\Collection;
  */
 final readonly class CreditSummary
 {
+    /**
+     * @param  int  $granted  Credits the company put on the seat this cycle.
+     * @param  int  $used  Credits booked against them.
+     * @param  int  $expired  Credits taken back, for example by a suspension.
+     */
     public function __construct(
-        public int $allowance,
+        public int $granted,
         public int $used,
+        public int $expired = 0,
     ) {}
 
     /**
@@ -21,7 +27,7 @@ final readonly class CreditSummary
      */
     public static function unused(int $allowance): self
     {
-        return new self(allowance: $allowance, used: 0);
+        return new self(granted: $allowance, used: 0);
     }
 
     /**
@@ -34,19 +40,28 @@ final readonly class CreditSummary
             ->sum('amount');
 
         return new self(
-            allowance: $total(CreditTransactionType::Allowance),
+            granted: $total(CreditTransactionType::Allowance),
             used: -$total(CreditTransactionType::Spend),
+            expired: -$total(CreditTransactionType::Expiry),
         );
+    }
+
+    /**
+     * What the company has given this cycle and not taken back.
+     */
+    public function allowance(): int
+    {
+        return max(0, $this->granted - $this->expired);
     }
 
     public function remaining(): int
     {
-        return max(0, $this->allowance - $this->used);
+        return max(0, $this->allowance() - $this->used);
     }
 
     public function isExhausted(): bool
     {
-        return $this->allowance > 0 && $this->used >= $this->allowance;
+        return $this->allowance() > 0 && $this->used >= $this->allowance();
     }
 
     /**
@@ -55,7 +70,7 @@ final readonly class CreditSummary
     public function toArray(): array
     {
         return [
-            'allowance' => $this->allowance,
+            'allowance' => $this->allowance(),
             'used' => $this->used,
             'remaining' => $this->remaining(),
             'exhausted' => $this->isExhausted(),

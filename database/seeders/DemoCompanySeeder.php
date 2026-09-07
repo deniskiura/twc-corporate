@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Actions\Corporate\AcceptInvitation;
 use App\Actions\Corporate\InviteEmployee;
 use App\Actions\Corporate\RevokeInvitation;
+use App\Actions\Corporate\SuspendEmployee;
 use App\Enums\CreditTransactionType;
 use App\Models\Company;
 use App\Models\Plan;
@@ -39,6 +40,7 @@ class DemoCompanySeeder extends Seeder
         private readonly InviteEmployee $inviteEmployee,
         private readonly AcceptInvitation $acceptInvitation,
         private readonly RevokeInvitation $revokeInvitation,
+        private readonly SuspendEmployee $suspendEmployee,
     ) {}
 
     public function run(): void
@@ -50,8 +52,8 @@ class DemoCompanySeeder extends Seeder
         $standard = Plan::where('name', 'Standard')->firstOrFail();
         $plus = Plan::where('name', 'Plus')->firstOrFail();
 
-        // Acme: a working team with one seat out of credits and one invite
-        // that has sat unanswered for three weeks.
+        // Acme: a working team with one seat out of credits, one suspended,
+        // and one invite that has sat unanswered for three weeks.
         $acme = Company::create(['name' => 'Acme Logistics']);
         $amina = $this->admin($acme, 'Amina Njoroge', 'amina@acme.test', 'acme-admin-token');
 
@@ -63,6 +65,10 @@ class DemoCompanySeeder extends Seeder
 
         $david = $this->join($this->invite($acme, $amina, 'david@acme.test', $lite, daysAgo: 6), 'David Kimani', daysAgo: 4);
         $this->spend($david, 2);
+
+        $kevin = $this->invite($acme, $amina, 'kevin@acme.test', $lite, daysAgo: 50);
+        $this->on(now()->subDays(45), fn () => $this->acceptInvitation->handle($kevin, 'Kevin Mwangi', 'password'));
+        $this->on(now()->subDays(12), fn () => $this->suspendEmployee->handle($kevin->refresh()));
 
         $this->invite($acme, $amina, 'esther@acme.test', $standard, daysAgo: 23);
         $this->invite($acme, $amina, 'faith@acme.test', $lite, daysAgo: 2);

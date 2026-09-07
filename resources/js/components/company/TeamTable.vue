@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RefreshCw, UserX } from '@lucide/vue';
+import { Pause, Play, RefreshCw, UserMinus, UserX } from '@lucide/vue';
 import CreditsBar from '@/components/company/CreditsBar.vue';
 import SeatStatusBadge from '@/components/company/SeatStatusBadge.vue';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,9 @@ defineProps<{
 defineEmits<{
     resend: [seat: SponsoredUser];
     revoke: [seat: SponsoredUser];
+    suspend: [seat: SponsoredUser];
+    resume: [seat: SponsoredUser];
+    remove: [seat: SponsoredUser];
 }>();
 </script>
 
@@ -70,6 +73,12 @@ defineEmits<{
                             v-if="seat.status === 'joined'"
                             :credits="seat.credits"
                         />
+                        <span
+                            v-else-if="seat.status === 'suspended'"
+                            class="text-muted-foreground text-xs"
+                        >
+                            Paused. No credits until resumed.
+                        </span>
                         <span v-else class="text-muted-foreground text-xs">
                             {{ seat.credits.allowance }} credits once they join
                         </span>
@@ -99,9 +108,38 @@ defineEmits<{
                                 Withdraw
                             </Button>
                         </div>
-                        <span v-else class="text-muted-foreground text-xs">
-                            &mdash;
-                        </span>
+                        <div v-else class="flex justify-end gap-1">
+                            <Button
+                                v-if="seat.status === 'joined'"
+                                size="sm"
+                                variant="outline"
+                                :disabled="busySeatId === seat.id"
+                                @click="$emit('suspend', seat)"
+                            >
+                                <Pause />
+                                Suspend
+                            </Button>
+                            <Button
+                                v-else
+                                size="sm"
+                                variant="outline"
+                                :disabled="busySeatId === seat.id"
+                                @click="$emit('resume', seat)"
+                            >
+                                <Play />
+                                Resume
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                class="text-destructive hover:text-destructive"
+                                :disabled="busySeatId === seat.id"
+                                @click="$emit('remove', seat)"
+                            >
+                                <UserMinus />
+                                Remove
+                            </Button>
+                        </div>
                     </td>
                 </tr>
             </tbody>

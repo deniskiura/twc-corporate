@@ -3,7 +3,7 @@
 namespace App\Actions\Corporate;
 
 use App\Enums\SponsorshipStatus;
-use App\Exceptions\InviteStateException;
+use App\Exceptions\SeatStateException;
 use App\Models\Sponsorship;
 
 class RevokeInvitation
@@ -14,7 +14,7 @@ class RevokeInvitation
      */
     public function handle(Sponsorship $sponsorship): void
     {
-        throw_unless($sponsorship->isPending(), InviteStateException::notPending());
+        throw_unless($sponsorship->isPending(), SeatStateException::notPending());
 
         $sponsorship->forceFill([
             'status' => SponsorshipStatus::Revoked,

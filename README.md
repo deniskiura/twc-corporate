@@ -4,7 +4,7 @@ The corporate product from the take-home brief: a company admin invites employee
 
 ![Team screen](docs/screenshots/team.png)
 
-More states in [docs/screenshots](docs/screenshots): [after an invite](docs/screenshots/team-after-invite.png), [all credits used](docs/screenshots/team-credits-exhausted.png), [no employees yet](docs/screenshots/team-empty.png), [the invitation email](docs/screenshots/invite-email.png), [the invite landing page](docs/screenshots/invite-accept.png) and [the employee's dashboard](docs/screenshots/employee-dashboard.png).
+More states in [docs/screenshots](docs/screenshots): [after an invite](docs/screenshots/team-after-invite.png), [all credits used](docs/screenshots/team-credits-exhausted.png), [no employees yet](docs/screenshots/team-empty.png), [a suspended seat](docs/screenshots/team-suspended.png), [what that employee sees](docs/screenshots/employee-suspended.png), [the invitation email](docs/screenshots/invite-email.png), [the invite landing page](docs/screenshots/invite-accept.png) and [the employee's dashboard](docs/screenshots/employee-dashboard.png).
 
 ## Running it
 
@@ -31,7 +31,7 @@ curl -H "Content-Type: application/json" \
      -d '{"token":"<invite_token from above>","name":"New Person"}' http://twc.test/api/invites/accept
 ```
 
-Also `POST /api/company/invites/{id}/resend` and `DELETE /api/company/invites/{id}`, which the screen needs for stale invites. The company is always taken from the caller's token, never from the request, so there is no id to tamper with. Invite and resend both email the employee their link; the token is also returned in the response, as the brief asks, so the flow can be exercised without a mailbox.
+Also `POST /api/company/invites/{id}/resend` and `DELETE /api/company/invites/{id}` for stale invites, and `POST /api/company/users/{id}/suspend`, `POST /api/company/users/{id}/resume` and `DELETE /api/company/users/{id}` for people who have joined. The company is always taken from the caller's token, never from the request, so there is no id to tamper with. Invite and resend both email the employee their link; the token is also returned in the response, as the brief asks, so the flow can be exercised without a mailbox.
 
 ## The staff console
 
@@ -67,7 +67,7 @@ for each subscription still active:
     grant next month's full allowance (ledger row, positive)
 ```
 
-Employee top-ups are paid by the employee at purchase and never appear on the company invoice. A seat withdrawn mid-month is billed to month end; no proration on the way out.
+Employee top-ups are paid by the employee at purchase and never appear on the company invoice. A seat suspended or removed mid-month is billed to month end; no proration on the way out. One line per seat per month, so a seat suspended and resumed in the same month is billed once.
 
 ## The reference design
 
@@ -82,19 +82,21 @@ Employee top-ups are paid by the employee at purchase and never appear on the co
 - One live seat per email per company. Revoking an invite frees the email to be invited again.
 - Invite tokens don't expire, but an invite unanswered for 14 days is flagged as stale. Resending rotates the token so a forwarded old link dies.
 - Someone who already has a personal TWC account joins with that account. Someone already sponsored by another company can't be sponsored twice.
+- **Suspend** ends the subscription today and takes back the rest of this month's allowance; the seat stays on the list and can be resumed. Resuming in the same month gives back exactly what that suspension took, which is nothing if the credits were already used, and never grants new ones; resuming in a later month starts a fresh prorated allowance, since nothing was granted for that month. **Remove** does the same to billing but takes the person off the list, returns them to a plain member account, and frees the email to be invited again.
 - The run-rate on the staff console is the list price of active seats. It is a pulse, not the invoice; that still needs the billing job.
 
 ## What I cut, and what's next
 
-Cut: plan changes, removing a joined employee, invite expiry, a company-level credit pool, search and pagination on the team list, queueing the invite email, tests.
+Cut: plan changes, invite expiry, a company-level credit pool, search and pagination on the team list, queueing the invite email, tests.
 
-Next, in order: the month-end billing job above; offboarding a joined seat (ends at month end, no proration); an estimated next invoice on the team screen so finance isn't surprised; invite expiry at 30 days with a reminder at 7; plan changes with the subscription close-and-reopen rule.
+Next, in order: the month-end billing job above; an estimated next invoice on the team screen so finance isn't surprised; invite expiry at 30 days with a reminder at 7; plan changes with the subscription close-and-reopen rule.
 
 ## What I'd test
 
 - **Tenancy**: admin A listing, resending or revoking B's seats gets a 404; a `company_id` in the payload is ignored; an employee's or staff token gets a 403 on the company API; a company admin gets a 403 on `/admin`.
 - **Accept**: `joined_at` and the subscription start equal the accept time with a frozen clock; a 16-credit plan joined on the 16th of a 30-day month gets 8 credits; accept twice is 409, revoked is 410, the old token after a resend is 404.
-- **Invite**: duplicate per company is 422, revoked email can be re-invited, email is lower-cased.
+- **Invite**: duplicate per company is 422, revoked or removed email can be re-invited, email is lower-cased.
+- **Suspend, resume, remove**: only joined seats can be suspended or removed and only suspended ones resumed (409 otherwise); suspending zeroes what's left this month; resuming in the same month restores it exactly, in a later month prorates afresh; removing returns the user to a member with no company and the same account re-joins on re-invite.
 - **List**: credits used only counts the current cycle, stale flips at exactly 14 days, totals match the rows, revoked rows are absent.
 - **BillingCycle**: days remaining on the first and last day, February in a leap year, proration rounding up.
 

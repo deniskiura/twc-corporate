@@ -41,7 +41,7 @@ class DashboardController extends Controller
     {
         $sponsorship = $user->sponsorship;
 
-        if (! $sponsorship?->hasJoined()) {
+        if (! $sponsorship || ! ($sponsorship->hasJoined() || $sponsorship->isSuspended())) {
             return null;
         }
 
@@ -49,6 +49,7 @@ class DashboardController extends Controller
         $transactions = $user->creditTransactions()->inCycle($cycle)->get();
 
         return [
+            'status' => $sponsorship->status,
             'company' => $sponsorship->company->name,
             'plan' => PlanResource::make($sponsorship->plan)->resolve(),
             'joined_at' => $sponsorship->joined_at,

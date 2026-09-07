@@ -37,9 +37,12 @@ use Illuminate\Support\Str;
  * @property CarbonImmutable $invited_at
  * @property CarbonImmutable $last_sent_at
  * @property CarbonImmutable|null $joined_at
+ * @property CarbonImmutable|null $suspended_at
  * @property CarbonImmutable|null $revoked_at
+ * @property CarbonImmutable|null $removed_at
  * @property int|string|null $cycle_allowance
  * @property int|string|null $cycle_spend
+ * @property int|string|null $cycle_expiry
  * @property-read Company $company
  * @property-read Plan $plan
  * @property-read User|null $user
@@ -62,7 +65,9 @@ class Sponsorship extends Model
             'invited_at' => 'immutable_datetime',
             'last_sent_at' => 'immutable_datetime',
             'joined_at' => 'immutable_datetime',
+            'suspended_at' => 'immutable_datetime',
             'revoked_at' => 'immutable_datetime',
+            'removed_at' => 'immutable_datetime',
         ];
     }
 
@@ -142,6 +147,11 @@ class Sponsorship extends Model
         return $this->status === SponsorshipStatus::Joined;
     }
 
+    public function isSuspended(): bool
+    {
+        return $this->status === SponsorshipStatus::Suspended;
+    }
+
     /**
      * How long the invite has gone unanswered since it was last sent.
      */
@@ -170,7 +180,7 @@ class Sponsorship extends Model
      */
     public function credits(): CreditSummary
     {
-        if (! $this->hasJoined()) {
+        if ($this->user_id === null) {
             return CreditSummary::unused($this->plan->monthly_credits);
         }
 
@@ -178,10 +188,11 @@ class Sponsorship extends Model
             $this->loadSum(self::cycleCreditAggregates(BillingCycle::current()), 'amount');
         }
 
-        // Spends are stored as negative amounts, so their sum is flipped.
+        // Spends and expiries are stored as negative amounts, so their sums are flipped.
         return new CreditSummary(
-            allowance: (int) $this->cycle_allowance,
+            granted: (int) $this->cycle_allowance,
             used: abs((int) $this->cycle_spend),
+            expired: abs((int) $this->cycle_expiry),
         );
     }
 
@@ -218,6 +229,7 @@ class Sponsorship extends Model
         return [
             'creditTransactions as cycle_allowance' => fn (Builder $query) => self::ofTypeInCycle($query, CreditTransactionType::Allowance, $cycle),
             'creditTransactions as cycle_spend' => fn (Builder $query) => self::ofTypeInCycle($query, CreditTransactionType::Spend, $cycle),
+            'creditTransactions as cycle_expiry' => fn (Builder $query) => self::ofTypeInCycle($query, CreditTransactionType::Expiry, $cycle),
         ];
     }
 

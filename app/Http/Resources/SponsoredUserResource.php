@@ -28,6 +28,7 @@ class SponsoredUserResource extends JsonResource
             'invited_at' => $this->invited_at,
             'last_sent_at' => $this->last_sent_at,
             'joined_at' => $this->joined_at,
+            'suspended_at' => $this->suspended_at,
             'days_pending' => $this->daysPending(),
             'is_stale' => $this->isStale(),
             'credits' => $this->credits()->toArray(),

@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\InviteEmployeeRequest;
 use App\Http\Resources\InvitationResource;
 use App\Models\Plan;
-use App\Models\Sponsorship;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -39,7 +38,7 @@ class InvitationController extends Controller
      */
     public function resend(Request $request, ResendInvitation $resendInvitation, int $sponsorship): InvitationResource
     {
-        $sponsorship = $resendInvitation->handle($this->findInCompany($request, $sponsorship));
+        $sponsorship = $resendInvitation->handle($request->user()->company->findSeat($sponsorship));
 
         return new InvitationResource($sponsorship->load('plan'));
     }
@@ -49,17 +48,8 @@ class InvitationController extends Controller
      */
     public function destroy(Request $request, RevokeInvitation $revokeInvitation, int $sponsorship): Response
     {
-        $revokeInvitation->handle($this->findInCompany($request, $sponsorship));
+        $revokeInvitation->handle($request->user()->company->findSeat($sponsorship));
 
         return response()->noContent();
-    }
-
-    /**
-     * Look the seat up through the admin's own company rather than globally,
-     * so another company's seat is a plain 404 rather than a leak.
-     */
-    private function findInCompany(Request $request, int $id): Sponsorship
-    {
-        return $request->user()->company->sponsorships()->findOrFail($id);
     }
 }

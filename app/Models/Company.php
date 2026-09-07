@@ -51,13 +51,26 @@ class Company extends Model
     }
 
     /**
-     * The seats an admin manages: invited and joined, but not revoked.
+     * The seats an admin manages: invited, joined and suspended. Withdrawn
+     * invites and removed employees are history.
      *
      * @return HasMany<Sponsorship, $this>
      */
     public function team(): HasMany
     {
-        return $this->sponsorships()->whereNot('status', SponsorshipStatus::Revoked);
+        return $this->sponsorships()->whereNotIn('status', [
+            SponsorshipStatus::Revoked,
+            SponsorshipStatus::Removed,
+        ]);
+    }
+
+    /**
+     * Look a seat up through the company rather than globally, so another
+     * company's seat is a plain 404 rather than a leak.
+     */
+    public function findSeat(int $id): Sponsorship
+    {
+        return $this->sponsorships()->findOrFail($id);
     }
 
     /**

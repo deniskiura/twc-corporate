@@ -28,11 +28,14 @@ class InviteEmployeeRequest extends FormRequest
                 'string',
                 'email',
                 'max:255',
-                // One live seat per email per company. Revoked invites don't
-                // count, so someone can be re-invited after a mistake.
+                // One live seat per email per company. Withdrawn invites and
+                // removed employees don't count, so they can be invited again.
                 Rule::unique('sponsorships', 'email')
                     ->where('company_id', $this->user()->company_id)
-                    ->whereNot('status', SponsorshipStatus::Revoked->value),
+                    ->whereNotIn('status', [
+                        SponsorshipStatus::Revoked->value,
+                        SponsorshipStatus::Removed->value,
+                    ]),
             ],
             'plan_id' => [
                 'required',

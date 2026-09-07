@@ -17,6 +17,18 @@ defineProps<{
             </span>
         </template>
 
+        <template v-else-if="seat.status === 'suspended'">
+            <Badge variant="outline" class="text-muted-foreground">
+                Suspended
+            </Badge>
+            <span
+                v-if="seat.suspended_at"
+                class="text-muted-foreground text-xs"
+            >
+                since {{ formatDate(seat.suspended_at) }}
+            </span>
+        </template>
+
         <template v-else-if="seat.is_stale">
             <Badge
                 variant="outline"

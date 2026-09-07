@@ -15,6 +15,9 @@ Route::middleware(['auth:api', 'company-admin'])
     ->name('api.company.')
     ->group(function () {
         Route::get('users', [CompanyUsersController::class, 'index'])->name('users.index');
+        Route::post('users/{sponsorship}/suspend', [CompanyUsersController::class, 'suspend'])->name('users.suspend');
+        Route::post('users/{sponsorship}/resume', [CompanyUsersController::class, 'resume'])->name('users.resume');
+        Route::delete('users/{sponsorship}', [CompanyUsersController::class, 'destroy'])->name('users.destroy');
         Route::post('invites', [InvitationController::class, 'store'])->name('invites.store');
         Route::post('invites/{sponsorship}/resend', [InvitationController::class, 'resend'])->name('invites.resend');
         Route::delete('invites/{sponsorship}', [InvitationController::class, 'destroy'])->name('invites.destroy');

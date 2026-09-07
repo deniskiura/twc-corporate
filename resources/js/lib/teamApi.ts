@@ -28,6 +28,21 @@ export function useTeamApi(token: string) {
             api.delete<void>(
                 InvitationController.destroy.url({ sponsorship: seat.id }),
             ),
+
+        suspend: (seat: SponsoredUser) =>
+            api.post<{ data: SponsoredUser }>(
+                CompanyUsersController.suspend.url({ sponsorship: seat.id }),
+            ),
+
+        resume: (seat: SponsoredUser) =>
+            api.post<{ data: SponsoredUser }>(
+                CompanyUsersController.resume.url({ sponsorship: seat.id }),
+            ),
+
+        remove: (seat: SponsoredUser) =>
+            api.delete<void>(
+                CompanyUsersController.destroy.url({ sponsorship: seat.id }),
+            ),
     };
 }
 

@@ -32,7 +32,20 @@ defineOptions({
     <Head title="Dashboard" />
 
     <div class="flex h-full flex-1 flex-col gap-4 p-4 md:p-6">
-        <Card v-if="membership" class="max-w-xl">
+        <Card v-if="membership?.status === 'suspended'" class="max-w-xl">
+            <CardHeader>
+                <CardDescription>Your wellness plan</CardDescription>
+                <CardTitle>
+                    Your seat at {{ membership.company }} is paused
+                </CardTitle>
+                <CardDescription>
+                    Your credits are on hold. Contact your account manager to
+                    get your seat resumed.
+                </CardDescription>
+            </CardHeader>
+        </Card>
+
+        <Card v-else-if="membership" class="max-w-xl">
             <CardHeader>
                 <CardDescription>Your wellness plan</CardDescription>
                 <CardTitle>

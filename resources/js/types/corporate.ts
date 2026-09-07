@@ -6,7 +6,7 @@ export type Plan = {
     currency: string;
 };
 
-export type SeatStatus = 'invited' | 'joined';
+export type SeatStatus = 'invited' | 'joined' | 'suspended';
 
 export type CreditSummary = {
     allowance: number;
@@ -25,6 +25,7 @@ export type SponsoredUser = {
     invited_at: string;
     last_sent_at: string;
     joined_at: string | null;
+    suspended_at: string | null;
     days_pending: number | null;
     is_stale: boolean;
     credits: CreditSummary;
@@ -44,6 +45,7 @@ export type BillingCycle = {
 
 export type TeamTotals = {
     joined: number;
+    suspended: number;
     invited: number;
     stale_invites: number;
     credits: {
@@ -64,6 +66,7 @@ export type TeamResponse = {
 
 /** What a sponsored employee sees on their dashboard. */
 export type Membership = {
+    status: 'joined' | 'suspended';
     company: string;
     plan: Plan;
     joined_at: string;

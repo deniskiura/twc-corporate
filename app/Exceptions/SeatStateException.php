@@ -8,11 +8,11 @@ use Illuminate\Http\Request;
 use RuntimeException;
 
 /**
- * Thrown when an invite is used in a state that doesn't allow it, such as
- * accepting one that was withdrawn. Carries the HTTP status the API should
- * answer with.
+ * Thrown when a seat is used in a state that doesn't allow it, such as
+ * accepting an invite that was withdrawn or resuming someone who was never
+ * suspended. Carries the HTTP status the API should answer with.
  */
-class InviteStateException extends RuntimeException
+class SeatStateException extends RuntimeException
 {
     private function __construct(string $message, private readonly int $status)
     {
@@ -37,6 +37,16 @@ class InviteStateException extends RuntimeException
     public static function notPending(): self
     {
         return new self('Only pending invites can be resent or withdrawn.', 409);
+    }
+
+    public static function notJoined(): self
+    {
+        return new self('Only employees who have joined can be suspended or removed.', 409);
+    }
+
+    public static function notSuspended(): self
+    {
+        return new self('Only suspended employees can be resumed.', 409);
     }
 
     public function render(Request $request): JsonResponse|RedirectResponse

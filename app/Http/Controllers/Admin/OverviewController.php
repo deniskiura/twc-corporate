@@ -38,9 +38,10 @@ class OverviewController extends Controller
                     ->join('plans', 'plans.id', '=', 'subscriptions.plan_id')
                     ->sum('plans.monthly_price'),
                 'credits' => [
+                    // Granted less taken back (expiries are stored negative).
                     'allowance' => (int) CreditTransaction::query()
                         ->inCycle($cycle)
-                        ->where('type', CreditTransactionType::Allowance)
+                        ->whereIn('type', [CreditTransactionType::Allowance, CreditTransactionType::Expiry])
                         ->sum('amount'),
                     'used' => abs((int) CreditTransaction::query()
                         ->inCycle($cycle)

@@ -12,10 +12,10 @@ Two things I would raise with the founder and the designer before building more 
 
 - A "last booked" date per seat, from the credit ledger. Free, the data is there.
 - Flag seats with no bookings for two full cycles as dormant on the team screen, the same way stale invites are flagged today.
-- Let the admin pause a dormant seat: the subscription closes, no allowance is granted, nothing is billed. Resume re-opens it with a prorated month, reusing the accept logic.
+- Suspend and resume already exist on the team screen (a suspended seat closes its subscription, grants nothing and bills nothing after the current month). Wire the dormant flag to that action so the admin can act in one click.
 - Nudge the employee before the admin sees the flag, so the perk gets a second chance.
 
-**Cost.** About 4 days. Last-booked and the dormant flag: half a day. Pause and resume with the billing rules: a day and a half. Team screen states and the admin action: one day. The nudge email and a scheduled job: half a day. Testing the date edges: half a day.
+**Cost.** About 2 days now that suspend and resume are built. Last-booked and the dormant flag: half a day. Team screen state and the one-click action: half a day. The nudge email and a scheduled job: half a day. Testing the date edges: half a day.
 
 ## 2. The per-seat plan may be the wrong unit. Consider a company credit pool with per-person caps
 
