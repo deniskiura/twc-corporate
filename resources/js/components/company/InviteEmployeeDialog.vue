@@ -76,7 +76,7 @@ async function submit() {
                 general:
                     error instanceof ApiError
                         ? error.message
-                        : 'Could not create the invite. Please try again.',
+                        : 'Could not send the invite. Please try again.',
             };
         }
     } finally {
@@ -91,8 +91,9 @@ async function submit() {
             <DialogHeader>
                 <DialogTitle>Invite an employee</DialogTitle>
                 <DialogDescription>
-                    They get a link to join {{ companyName }}'s plan. Billing
-                    for the seat only starts once they log in.
+                    They'll get an email with a link to join
+                    {{ companyName }}'s plan. Billing for the seat only starts
+                    once they log in.
                 </DialogDescription>
             </DialogHeader>
 
@@ -163,7 +164,7 @@ async function submit() {
                     </Button>
                     <Button type="submit" :disabled="submitting">
                         <Spinner v-if="submitting" />
-                        Create invite
+                        Send invite
                     </Button>
                 </DialogFooter>
             </form>

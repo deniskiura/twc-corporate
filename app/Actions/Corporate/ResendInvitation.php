@@ -3,23 +3,31 @@
 namespace App\Actions\Corporate;
 
 use App\Exceptions\InviteStateException;
+use App\Mail\EmployeeInvitation;
 use App\Models\Sponsorship;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class ResendInvitation
 {
     /**
-     * Rotate the token and restart the "pending since" clock. The old link
-     * stops working, which matters if an invite has been forwarded around.
+     * Rotate the token, restart the "pending since" clock and email a fresh
+     * link. The old link stops working, which matters if an invite has been
+     * forwarded around.
      */
     public function handle(Sponsorship $sponsorship): Sponsorship
     {
         throw_unless($sponsorship->isPending(), InviteStateException::notPending());
 
-        $sponsorship->forceFill([
-            'invite_token' => Sponsorship::generateToken(),
-            'last_sent_at' => now(),
-        ])->save();
+        return DB::transaction(function () use ($sponsorship) {
+            $sponsorship->forceFill([
+                'invite_token' => Sponsorship::generateToken(),
+                'last_sent_at' => now(),
+            ])->save();
 
-        return $sponsorship;
+            Mail::to($sponsorship->email)->send(new EmployeeInvitation($sponsorship));
+
+            return $sponsorship;
+        });
     }
 }

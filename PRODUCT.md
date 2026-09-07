@@ -9,6 +9,7 @@ Two things I would raise with the founder and the designer before building more 
 **Who it's for.** The company buying it (they stop paying for ghosts), and us (they renew).
 
 **What to build.**
+
 - A "last booked" date per seat, from the credit ledger. Free, the data is there.
 - Flag seats with no bookings for two full cycles as dormant on the team screen, the same way stale invites are flagged today.
 - Let the admin pause a dormant seat: the subscription closes, no allowance is granted, nothing is billed. Resume re-opens it with a prorated month, reusing the accept logic.
@@ -23,6 +24,7 @@ Two things I would raise with the founder and the designer before building more 
 **Who it's for.** The company (they pay for usage, not for guesses), the employee (their credits aren't capped by a plan picked before they joined), and us (a pool is a much easier upsell than moving individuals between plans).
 
 **What to build.**
+
 - A monthly credit pool bought by the company, with a default per-person cap the admin can raise for individuals.
 - Employees draw from the pool; the ledger already supports it, each spend just references the pool instead of a seat subscription.
 - Billing becomes pool size plus overage, instead of seat lines. The team screen's summary becomes pool used versus pool size, which is the number the admin actually asks about.

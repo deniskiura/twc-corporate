@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 
 /**
  * A seat right after its invite is created or resent: the seat plus the
- * one-time link. This is the only place the token is exposed, standing in
- * for the email we don't send in this exercise.
+ * link that was just emailed. This is the only place the token is exposed,
+ * so the admin can share it by hand if the email doesn't arrive and the API
+ * can be exercised without a mailbox.
  */
 class InvitationResource extends SponsoredUserResource
 {

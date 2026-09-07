@@ -4,7 +4,7 @@ The corporate product from the take-home brief: a company admin invites employee
 
 ![Team screen](docs/screenshots/team.png)
 
-More states in [docs/screenshots](docs/screenshots): [after an invite](docs/screenshots/team-after-invite.png), [all credits used](docs/screenshots/team-credits-exhausted.png), [no employees yet](docs/screenshots/team-empty.png), [the invite landing page](docs/screenshots/invite-accept.png) and [the employee's dashboard](docs/screenshots/employee-dashboard.png).
+More states in [docs/screenshots](docs/screenshots): [after an invite](docs/screenshots/team-after-invite.png), [all credits used](docs/screenshots/team-credits-exhausted.png), [no employees yet](docs/screenshots/team-empty.png), [the invitation email](docs/screenshots/invite-email.png), [the invite landing page](docs/screenshots/invite-accept.png) and [the employee's dashboard](docs/screenshots/employee-dashboard.png).
 
 ## Running it
 
@@ -15,13 +15,13 @@ php artisan key:generate && php artisan migrate --seed
 npm run build                     # or `composer run dev` for hot reload
 ```
 
-Served by Herd at http://twc.test. Three seeded companies (password is `password` everywhere):
+Served by Herd at http://twc.test. Invite emails go out over SMTP: `.env.example` points at Mailpit on port 1025 (UI at http://localhost:8025), or set `MAIL_MAILER=log` to just write them to the log. Three seeded companies (password is `password` everywhere):
 
-| Company | Admin login | API token | What it shows |
-|---|---|---|---|
-| Acme Logistics | amina@acme.test | `acme-admin-token` | A working team, one seat out of credits, an invite pending three weeks |
-| Beta Bank | bob@betabank.test | `beta-admin-token` | Every seat has used its allowance |
-| Cedar Studio | carol@cedar.test | `cedar-admin-token` | Nobody invited yet |
+| Company        | Admin login       | API token           | What it shows                                                          |
+| -------------- | ----------------- | ------------------- | ---------------------------------------------------------------------- |
+| Acme Logistics | amina@acme.test   | `acme-admin-token`  | A working team, one seat out of credits, an invite pending three weeks |
+| Beta Bank      | bob@betabank.test | `beta-admin-token`  | Every seat has used its allowance                                      |
+| Cedar Studio   | carol@cedar.test  | `cedar-admin-token` | Nobody invited yet                                                     |
 
 ```bash
 curl -H "Authorization: Bearer acme-admin-token" http://twc.test/api/company/users
@@ -31,7 +31,7 @@ curl -H "Content-Type: application/json" \
      -d '{"token":"<invite_token from above>","name":"New Person"}' http://twc.test/api/invites/accept
 ```
 
-Also `POST /api/company/invites/{id}/resend` and `DELETE /api/company/invites/{id}`, which the screen needs for stale invites. The company is always taken from the caller's token, never from the request, so there is no id to tamper with.
+Also `POST /api/company/invites/{id}/resend` and `DELETE /api/company/invites/{id}`, which the screen needs for stale invites. The company is always taken from the caller's token, never from the request, so there is no id to tamper with. Invite and resend both email the employee their link; the token is also returned in the response, as the brief asks, so the flow can be exercised without a mailbox.
 
 ## Data model
 
@@ -81,7 +81,7 @@ Employee top-ups are paid by the employee at purchase and never appear on the co
 
 ## What I cut, and what's next
 
-Cut: sending email, plan changes, removing a joined employee, invite expiry, a company-level credit pool, search and pagination on the team list, tests.
+Cut: plan changes, removing a joined employee, invite expiry, a company-level credit pool, search and pagination on the team list, queueing the invite email, tests.
 
 Next, in order: the month-end billing job above; offboarding a joined seat (ends at month end, no proration); an estimated next invoice on the team screen so finance isn't surprised; invite expiry at 30 days with a reminder at 7; plan changes with the subscription close-and-reopen rule.
 

@@ -25,11 +25,12 @@ async function copy() {
 <template>
     <Alert>
         <Link2 />
-        <AlertTitle>Invite link for {{ invitation.email }}</AlertTitle>
+        <AlertTitle>Invite emailed to {{ invitation.email }}</AlertTitle>
         <AlertDescription>
             <p>
-                Invite emails aren't sent yet, so share this link with them
-                directly. It stops working if you resend or withdraw the invite.
+                They've been sent a link to join. If it doesn't arrive, copy it
+                below and send it yourself. It stops working if you resend or
+                withdraw the invite.
             </p>
             <div class="mt-2 flex flex-wrap items-center gap-2">
                 <code

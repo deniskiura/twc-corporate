@@ -75,7 +75,7 @@ async function load() {
 
 function onInvited(invitation: Invitation) {
     lastInvite.value = invitation;
-    toast.success(`Invite created for ${invitation.email}.`);
+    toast.success(`Invite sent to ${invitation.email}.`);
     void load();
 }
 
@@ -85,7 +85,7 @@ async function resend(seat: SponsoredUser) {
     try {
         const { data } = await api.resend(seat);
         lastInvite.value = data;
-        toast.success(`New invite link ready for ${seat.email}.`);
+        toast.success(`Invite resent to ${seat.email}.`);
         await load();
     } catch (error) {
         toast.error(

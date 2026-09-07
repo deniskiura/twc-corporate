@@ -14,6 +14,7 @@ use App\Support\BillingCycle;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Three companies that between them cover every state the team screen has
@@ -42,6 +43,9 @@ class DemoCompanySeeder extends Seeder
 
     public function run(): void
     {
+        // The real invite action emails people. Demo seats shouldn't.
+        Mail::fake();
+
         $lite = Plan::where('name', 'Lite')->firstOrFail();
         $standard = Plan::where('name', 'Standard')->firstOrFail();
         $plus = Plan::where('name', 'Plus')->firstOrFail();
