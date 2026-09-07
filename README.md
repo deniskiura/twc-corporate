@@ -69,9 +69,6 @@ for each subscription still active:
 
 Employee top-ups are paid by the employee at purchase and never appear on the company invoice. A seat suspended or removed mid-month is billed to month end; no proration on the way out. One line per seat per month, so a seat suspended and resumed in the same month is billed once.
 
-## The reference design
-
-[I have not reviewed the reference yet. Section to be filled in once it is shared.]
 
 ## Assumptions where the spec was silent
 
