@@ -9,6 +9,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -35,4 +37,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // A form submitted with a stale session (left open past its lifetime,
+        // or the app reset underneath it) goes back to the same page with a
+        // fresh token and a nudge, instead of a dead-end 419.
+        $exceptions->respond(function (Response $response, Throwable $exception, Request $request) {
+            if ($response->getStatusCode() === 419 && ! $request->expectsJson()) {
+                Inertia::flash('toast', [
+                    'type' => 'warning',
+                    'message' => 'That page had expired. Please try again.',
+                ]);
+
+                return back(fallback: route('home'));
+            }
+
+            return $response;
+        });
     })->create();
