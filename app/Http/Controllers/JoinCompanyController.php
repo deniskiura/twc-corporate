@@ -25,7 +25,7 @@ class JoinCompanyController extends Controller
             'status' => $sponsorship->status,
             'email' => $sponsorship->email,
             'company' => $sponsorship->company->name,
-            'plan' => new PlanResource($sponsorship->plan),
+            'plan' => PlanResource::make($sponsorship->plan)->resolve(),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }

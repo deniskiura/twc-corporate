@@ -46,7 +46,7 @@ class DashboardController extends Controller
 
         return [
             'company' => $sponsorship->company->name,
-            'plan' => new PlanResource($sponsorship->plan),
+            'plan' => PlanResource::make($sponsorship->plan)->resolve(),
             'joined_at' => $sponsorship->joined_at,
             'billing_cycle' => $cycle->toArray(),
             'credits' => [

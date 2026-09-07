@@ -19,7 +19,7 @@ class UsersController extends Controller
     {
         return Inertia::render('company/Users', [
             'company' => $request->user()->company->only(['id', 'name']),
-            'plans' => PlanResource::collection(Plan::active()->orderBy('monthly_price')->get()),
+            'plans' => PlanResource::collection(Plan::active()->orderBy('monthly_price')->get())->resolve(),
             'apiToken' => $request->user()->api_token,
         ]);
     }
