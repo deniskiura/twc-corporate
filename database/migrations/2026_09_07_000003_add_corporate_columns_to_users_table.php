@@ -1,0 +1,26 @@
+<?php
+
+use App\Enums\UserRole;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('role')->default(UserRole::Member->value);
+            $table->foreignId('company_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('api_token', 80)->nullable()->unique();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('company_id');
+            $table->dropColumn(['role', 'api_token']);
+        });
+    }
+};
