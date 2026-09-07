@@ -66,9 +66,9 @@ defineOptions({
 
                 <p class="text-muted-foreground text-sm">
                     <template v-if="membership.credits.exhausted">
-                        You've used this month's allowance. You can buy extra
-                        credits in the app, and your allowance resets on
-                        {{ resetDate(membership.billing_cycle.end) }}.
+                        You've used this month's allowance. You can request more
+                        from your admin, or wait for the next plan cycle reset
+                        on {{ resetDate(membership.billing_cycle.end) }}.
                     </template>
                     <template v-else>
                         Unused credits expire on
