@@ -178,9 +178,10 @@ class Sponsorship extends Model
             $this->loadSum(self::cycleCreditAggregates(BillingCycle::current()), 'amount');
         }
 
+        // Spends are stored as negative amounts, so their sum is flipped.
         return new CreditSummary(
             allowance: (int) $this->cycle_allowance,
-            used: (int) -$this->cycle_spend,
+            used: abs((int) $this->cycle_spend),
         );
     }
 
@@ -197,17 +198,22 @@ class Sponsorship extends Model
     }
 
     /**
-     * @return array<string, Closure(Builder<CreditTransaction>): void>
+     * @return array<string, Closure(Builder<CreditTransaction>): Builder<CreditTransaction>>
      */
     private static function cycleCreditAggregates(BillingCycle $cycle): array
     {
         return [
-            'creditTransactions as cycle_allowance' => fn (Builder $query) => $query
-                ->where('type', CreditTransactionType::Allowance)
-                ->inCycle($cycle),
-            'creditTransactions as cycle_spend' => fn (Builder $query) => $query
-                ->where('type', CreditTransactionType::Spend)
-                ->inCycle($cycle),
+            'creditTransactions as cycle_allowance' => fn (Builder $query) => self::ofTypeInCycle($query, CreditTransactionType::Allowance, $cycle),
+            'creditTransactions as cycle_spend' => fn (Builder $query) => self::ofTypeInCycle($query, CreditTransactionType::Spend, $cycle),
         ];
+    }
+
+    /**
+     * @param  Builder<CreditTransaction>  $query
+     * @return Builder<CreditTransaction>
+     */
+    private static function ofTypeInCycle(Builder $query, CreditTransactionType $type, BillingCycle $cycle): Builder
+    {
+        return $query->where('type', $type)->inCycle($cycle);
     }
 }
