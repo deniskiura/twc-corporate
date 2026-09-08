@@ -1,6 +1,5 @@
 # Product improvements
 
-Two things I would raise with the founder and the designer before building more of the spec as written. Estimates assume one engineer on this codebase.
 
 ## 1. Dormant seats: stop billing companies for employees who never come back
 

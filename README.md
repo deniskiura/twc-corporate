@@ -97,6 +97,5 @@ Next, in order: the month-end billing job above; an estimated next invoice on th
 - **List**: credits used only counts the current cycle, stale flips at exactly 14 days, totals match the rows, revoked rows are absent.
 - **BillingCycle**: days remaining on the first and last day, February in a leap year, proration rounding up.
 
-Most of the API cases above are already exercised by `scripts/api-smoke.py`, a plain Python script that runs them against a freshly seeded local instance (`php artisan migrate:fresh --seed && python3 scripts/api-smoke.py`). It is not a test suite, but it is what I ran before submitting.
 
 Product improvements are in [PRODUCT.md](PRODUCT.md).
